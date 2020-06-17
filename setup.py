@@ -31,6 +31,7 @@ setup(
 
     description='Reusable Django app to automate dunders `__repr__` and `__str__`',
     long_description=read_file('README.md'),
+    long_description_content_type='text/markdown',
     license='MIT',
 
     author='John Mark Vandenberg',
