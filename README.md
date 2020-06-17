@@ -15,6 +15,9 @@ It can be instructed to overwrite the `__repr__` and `__str__` of specific
 models, useful if the model has dedicated methods, but the output is not
 desirable.
 
+It will look for primary and unique keys, in an attempt to show the minimum
+necessary for the user to recognise the record.
+
 ## Install
 
 1. `pip install django-dunder`
@@ -23,6 +26,11 @@ desirable.
 
 To catch all models missing `__str__` or `__repr__`, put it at the top
 of `INSTALLED_APPS`.
+
+To quickly see how it improves the Django admin, install
+[`django-data-browser`](https://github.com/tolomea/django-data-browser)
+in development before and after, and click its "admin" column on
+any model that was using the Django default string representation.
 
 ## Configure
 
