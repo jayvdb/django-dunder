@@ -60,8 +60,9 @@ DUNDER_STR_EXCLUDE = ['myapp.Person']
 
 ## Explicit fields
 
-To show specific fields in either `str()` or `repr()`, two extra model meta
-options are automatically available:
+To show specific fields in either `str()` or `repr()`, two extra
+[model meta options](https://docs.djangoproject.com/en/dev/ref/models/options)
+are automatically added by django-dunder:
 
 ```py
 from django.db import models
