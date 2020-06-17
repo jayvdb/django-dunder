@@ -102,3 +102,19 @@ def _to_string(model, meta_field_name, fmt):
 
     rv = '{}({})'.format(model_name, attrs)
     return rv
+
+
+def _model_repr(self):
+    return _to_string(
+        model=self,
+        meta_field_name='repr_fields',
+        fmt=FIELD_REPR_FMT,
+    )
+
+
+def _model_str(self):
+    return _to_string(
+        model=self,
+        meta_field_name='str_fields',
+        fmt=FIELD_STR_FMT,
+    )

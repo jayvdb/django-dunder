@@ -14,7 +14,12 @@ from .app_settings import (
     REPR_EXCLUDE,
     STR_EXCLUDE,
 )
-from .core import _dunder_applied_counter, _model_name_counter
+from .core import (
+    _dunder_applied_counter,
+    _model_name_counter,
+    _model_repr,
+    _model_str,
+)
 
 
 def _has_default_repr(model):
@@ -70,21 +75,16 @@ def _patch_model_cls(sender, **kwargs):
     if not _ANY_REGISTER:
         return
 
-    try:
-        from .mixins import DunderReprModel, DunderStrModel
-    except ImproperlyConfigured:
-        return
-
     label = sender._meta.label
 
-    if sender.__repr__ != DunderReprModel.__repr__:
+    if sender.__repr__ != _model_repr:
         if _should_force_repr(sender) or (AUTO_REPR and _has_default_repr(sender)):
             if not REPR_EXCLUDE or label not in REPR_EXCLUDE:
                 _dunder_applied_counter += 1
-                sender.__repr__ = DunderReprModel.__repr__
+                sender.__repr__ = _model_repr
 
-    if sender.__str__ != DunderStrModel.__str__:
+    if sender.__str__ != _model_str:
         if _should_force_str(label) or (AUTO_STR and _has_default_str(sender)):
             if not STR_EXCLUDE or label not in STR_EXCLUDE:
                 _dunder_applied_counter += 1
-                sender.__str__ = DunderStrModel.__str__
+                sender.__str__ = _model_str
