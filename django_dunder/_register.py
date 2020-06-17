@@ -1,3 +1,4 @@
+from django.core.exceptions import ImproperlyConfigured
 from django.db.models import Model
 from django.db.models.signals import class_prepared
 from django.dispatch import receiver
@@ -69,7 +70,10 @@ def _patch_model_cls(sender, **kwargs):
     if not _ANY_REGISTER:
         return
 
-    from .mixins import DunderReprModel, DunderStrModel
+    try:
+        from .mixins import DunderReprModel, DunderStrModel
+    except ImproperlyConfigured:
+        return
 
     label = sender._meta.label
 
