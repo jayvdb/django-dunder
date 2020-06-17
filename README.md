@@ -102,5 +102,8 @@ only wants a sane `__repr__`, incorporate the decorator in
 [`sentry.db.models`](https://github.com/getsentry/sentry/blob/master/src/sentry/db/models/base.py)
 into a base mixin model used throughout the project.
 
-Inspiration was drawn from django-model-repr and django-auto-repr, which
-may be sufficient for some projects.
+Inspiration was drawn from
+- [django-model-repr](https://github.com/relip/django-model-repr)
+- [django-auto-repr](https://github.com/dan-passaro/django-auto-repr)
+
+They may be sufficient for some projects.
