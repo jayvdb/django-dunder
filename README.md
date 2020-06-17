@@ -5,8 +5,8 @@ django-dunder is an installable app to automatically provide usable
 and for project apps.
 
 The motivation for this app came while consulting for
-https://github.com/viper-development/ , which builds custom apps quickly,
-building custom functionality and not writing boilerplate code.
+https://github.com/viper-development/ , which builds apps quickly,
+developing custom functionality instead of writing boilerplate code.
 
 By default, it will detect and attach to existing models that are using
 the default `__repr__` and `__str__`.
