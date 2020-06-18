@@ -1,7 +1,7 @@
 from django.apps import AppConfig
 from django.utils.translation import gettext_lazy as _
 
-from .app_settings import _PYTEST, _ANY_REGISTER
+from .app_settings import _ANY_REGISTER
 
 
 class DunderConfig(AppConfig):
