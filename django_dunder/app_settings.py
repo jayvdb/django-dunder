@@ -9,9 +9,7 @@ def get_setting_safe(name, default):
     except ImproperlyConfigured:
         return default
 
-_PYTEST = 'pytest' in sys.modules
-
-AUTO = get_setting_safe('AUTO', False if _PYTEST else True)
+AUTO = get_setting_safe('AUTO', True)
 
 AUTO_REPR = get_setting_safe('AUTO_REPR', AUTO)
 AUTO_STR = get_setting_safe('AUTO_STR', AUTO)
