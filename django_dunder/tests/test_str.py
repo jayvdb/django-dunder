@@ -6,6 +6,7 @@ from django_nine.versions import DJANGO_GTE_2_0
 
 from django_dunder.core import _model_name_counter
 from django_dunder.mixins import DunderStrModel
+from django_dunder._register import _has_default_str
 
 from django_fake_model import models as f
 
@@ -23,6 +24,9 @@ class StrDefault(DunderStrModel, f.FakeModel):
 @StrDefaultOrig.fake_me
 @StrDefault.fake_me
 def test_str_default():
+    assert _has_default_str(StrDefaultOrig)
+    assert not _has_default_str(StrDefault)
+
     item_orig = StrDefaultOrig.objects.create(name1='a', name2='b')
 
     if DJANGO_GTE_2_0:
@@ -164,3 +168,42 @@ def test_str_explicit_app():
 
     assert str(item1) == 'myapp1.StrNameConflict1(id=1)'
     assert str(item2) == 'myapp2.StrNameConflict2(id=1)'
+
+
+class StrHasDunderStr(f.FakeModel):
+    name = models.TextField(null=True, blank=True)
+
+    def __str__(self):
+        return 'model.__str__'
+
+
+@StrHasDunderStr.fake_me
+def test_auto_ignore_existing():
+    assert not _has_default_str(StrHasDunderStr)
+
+    item = StrHasDunderStr.objects.create()
+
+    assert str(item) == 'model.__str__'
+
+
+class StrHasDunderStrParent(f.FakeModel):
+    name = models.TextField(null=True, blank=True)
+
+    def __str__(self):
+        return 'model.__str__'
+
+    class Meta:
+        abstract = True
+
+
+class StrHasDunderStrChild(StrHasDunderStrParent):
+    pass
+
+
+@StrHasDunderStrChild.fake_me
+def test_auto_ignore_existing_inheritance():
+    assert not _has_default_str(StrHasDunderStrChild)
+
+    item = StrHasDunderStrChild.objects.create()
+
+    assert str(item) == 'model.__str__'
