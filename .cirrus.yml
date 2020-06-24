@@ -1,0 +1,25 @@
+# codecov-python has no Cirrus CI support
+# https://github.com/codecov/codecov-python/issues/233
+env:
+  LC_ALL: C.UTF-8
+  LANG: C.UTF-8
+  DJ: 22
+  CODECOV_TOKEN: ENCRYPTED[4c41f1593c0dc495da197e4ee40da1819c1e1a0660264fdf63652879e3ee44fd0d6bc50ed3e520610a5ecda60c37c48c]
+
+Linux_task:
+  container:
+    matrix:
+      - image: python:3.8
+      - image: python:3.6
+      - image: python:2.7
+      - image: python:3.4
+      - image: python:3.7
+  install_script:
+    - pip install -U tox coverage
+  script:
+    - python --version
+    - PY=$(python -c 'import sys; print("%d%d" % (sys.version_info[0], sys.version_info[1]))')
+    - if [[ $PY == 27 ]]; then export COV_FAIL_UNDER=60; export DJ=111; fi
+    - if [[ $PY == 34 ]]; then export COV_FAIL_UNDER=65; export DJ=111; fi
+    - python -m tox -e py$PY-django$DJ
+    - bash <(curl -s https://codecov.io/bash)
