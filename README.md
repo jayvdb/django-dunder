@@ -4,6 +4,14 @@ django-dunder is an installable app to automatically provide usable
 `__repr__` and `__str__` for other Django third-party installable apps
 and for project apps.
 
+On Python 3, it can use `__unicode__` if present and `__str__` is missing,
+such as apps that work on Python 3, but havent been fully updated.
+
+It emits warnings whenever `__unicode__` is encountered on an active model.
+It does this even on Python 2 when the `__unicode__`
+is identical to the `__str__`, providing custom warnings to indicate what
+code changes are needed to finish the Python 3 port.
+
 The motivation for this app came while consulting for
 https://github.com/viper-development/ , which builds apps quickly,
 developing custom functionality instead of writing boilerplate code.
@@ -17,6 +25,13 @@ desirable.
 
 It will look for primary and unique keys, in an attempt to show the minimum
 necessary for the user to recognise the record.
+
+*Note*: On Python 2, it will add a `__str__` which may emit non-ascii for
+model instances containing Unicode values in the fields it decides to
+display.  De-select any such models using the settings.  I am willing to
+review a PR to add proper Python 2 support, but I will reject any partial
+Python 2 support.  I can be convinced to build it to my own standards,
+but it isnt sensible to do it in 2020 without a good reason.
 
 ## Install
 
@@ -34,6 +49,8 @@ any model that was using the Django default string representation.
 
 ## Configure
 
+To disable unicode warnings, set `DUNDER_WARN_UNICODE = False`.
+
 For more control, in your `settings`, toggle these "auto", "force" and
 "exclude" settings.
 
@@ -43,6 +60,7 @@ set one of
 - `DUNDER_AUTO = False`
 - `DUNDER_AUTO_REPR = False`
 - `DUNDER_AUTO_STR = False`
+- `DUNDER_COPY_UNICODE = False`
 
 To force all models to use these methods, use `DUNDER_FORCE = True`, or
 set `DUNDER_FORCE_REPR` or `DUNDER_FORCE_STR` to `True`.
@@ -57,6 +75,15 @@ by providing a list of model labels to the exclude settings:
 DUNDER_REPR_EXCLUDE = ['auth.User']
 DUNDER_STR_EXCLUDE = ['myapp.Person']
 ```
+
+*Note* When the copying of `__unicode__` is disabled on Python 3, and the
+Django setting `DEBUG` is also disabled, this app will raise
+`ImproperlyConfigured` if it finds a `__unicode__`, as it assumes the app
+intended for the `__unicode__` to be used, and running in production with
+the default Django `__str__` would result in incorrect behaviour.
+To disable this, re-enable copying of the unicode, or set
+
+- `DUNDER_REJECT_UNICODE = False`
 
 ## Explicit fields
 
