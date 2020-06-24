@@ -63,7 +63,7 @@ def _to_string(model, meta_field_name, fmt):
     if hasattr(cls._meta, meta_field_name):
         selected_field_names = getattr(cls._meta, meta_field_name)
     elif cls._meta.unique_together:
-        selected_field_names = cls._meta.unique_together[0]
+        selected_field_names = next(iter(cls._meta.unique_together))
     elif len(meta_fields) > 1:
         uniq_fields = [f for f in (meta_fields[1:] if has_autofield else meta_fields) if f.unique]
         if uniq_fields:
