@@ -76,4 +76,7 @@ COPY_UNICODE = get_setting_safe('COPY_UNICODE', AUTO_STR)
 REJECT_UNICODE = get_setting_safe('REJECT_UNICODE',
     not django_settings.DEBUG and not COPY_UNICODE)
 
+CHECK_INACTIVE_UNICODE = get_setting_safe(
+    'CHECK_INACTIVE_UNICODE', 'error')
+
 _post_process()

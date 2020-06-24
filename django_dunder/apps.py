@@ -16,6 +16,8 @@ class DunderConfig(AppConfig):
         if _ANY_REGISTER:
             import django_dunder._register  # noqa
 
+        from .checks import check_py2_unicode  # noqa
+
     def get_models(self, *args, **kwargs):
         # The following is used to prevent the .models from being loaded
         # especially by test harnesses

@@ -85,6 +85,13 @@ To disable this, re-enable copying of the unicode, or set
 
 - `DUNDER_REJECT_UNICODE = False`
 
+There is also a Django [check](https://docs.djangoproject.com/en/3.0/topics/checks/)
+for inactive custom `__unicode__`, which runs seperately from the model
+registration process, so it is safer to use.  It defaults to emit errors,
+however it can be set to emit errors, or disabled by setting it to `False`.
+
+- `DUNDER_CHECK_INACTIVE_UNICODE = 'warn'`
+
 ## Explicit fields
 
 To show specific fields in either `str()` or `repr()`, two extra
