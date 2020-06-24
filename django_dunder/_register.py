@@ -64,8 +64,7 @@ def _should_force_str(label):
     return FORCE
 
 
-@receiver(class_prepared)
-def _patch_model_cls(sender, **kwargs):
+def _model_cls_patcher(sender, **kwargs):
     global _dunder_applied_counter, _model_name_counter
 
     # This is used to prefix duplicated names
@@ -87,3 +86,7 @@ def _patch_model_cls(sender, **kwargs):
             if not STR_EXCLUDE or label not in STR_EXCLUDE:
                 _dunder_applied_counter += 1
                 sender.__str__ = _model_str
+
+
+def _register_models_receiver():
+    receiver(class_prepared)(_model_cls_patcher)
