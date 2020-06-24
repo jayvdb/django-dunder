@@ -2,17 +2,7 @@ from django.db.models import Model
 from django.db.models.signals import class_prepared
 from django.dispatch import receiver
 
-from .app_settings import (
-    _ANY_REGISTER,
-    AUTO,
-    AUTO_REPR,
-    AUTO_STR,
-    FORCE,
-    FORCE_REPR,
-    FORCE_STR,
-    REPR_EXCLUDE,
-    STR_EXCLUDE,
-)
+from . import app_settings
 from .core import (
     _dunder_applied_counter,
     _model_name_counter,
@@ -39,29 +29,37 @@ def _has_default_str(model):
                 return False
 
 
-def _should_force_repr(label):
-    if FORCE_REPR is False:
+def _should_force_repr(label, model, has_default_func):
+    if label in app_settings.REPR_EXCLUDE:
         return False
 
-    if isinstance(FORCE_REPR, list):
-        return label in FORCE_REPR
+    if label in app_settings.FORCE_REPR:
+        return True
 
-    if REPR_EXCLUDE:
-        return label not in REPR_EXCLUDE
+    if app_settings.AUTO_REPR and has_default_func(model):
+        return True
 
-    return FORCE
+    return False
 
-def _should_force_str(label):
-    if FORCE_STR is False:
+
+def _should_force_str(label, model, has_default_func):
+    if label in app_settings.STR_EXCLUDE:
         return False
 
-    if isinstance(FORCE_STR, list):
-        return label in FORCE_STR
+    if label in app_settings.FORCE_STR:
+        return True
 
-    if STR_EXCLUDE:
-        return label not in STR_EXCLUDE
+    if app_settings.AUTO_STR and has_default_func(model):
+        return True
 
-    return FORCE
+    return False
+
+
+def _patch_model_cls(model, method_name, new_func):
+    global _dunder_applied_counter
+    # TODO: Use __unicode__ on PY2
+    setattr(model, method_name, new_func)
+    _dunder_applied_counter += 1
 
 
 def _model_cls_patcher(sender, **kwargs):
@@ -70,22 +68,18 @@ def _model_cls_patcher(sender, **kwargs):
     # This is used to prefix duplicated names
     _model_name_counter[sender.__class__.__name__] += 1
 
-    if not _ANY_REGISTER:
+    if not app_settings._ANY_REGISTER:
         return
 
     label = sender._meta.label
 
     if sender.__repr__ != _model_repr:
-        if _should_force_repr(sender) or (AUTO_REPR and _has_default_repr(sender)):
-            if not REPR_EXCLUDE or label not in REPR_EXCLUDE:
-                _dunder_applied_counter += 1
-                sender.__repr__ = _model_repr
+        if _should_force_repr(label, sender, _has_default_repr):
+            _patch_model_cls(sender, '__repr__', _model_repr)
 
     if sender.__str__ != _model_str:
-        if _should_force_str(label) or (AUTO_STR and _has_default_str(sender)):
-            if not STR_EXCLUDE or label not in STR_EXCLUDE:
-                _dunder_applied_counter += 1
-                sender.__str__ = _model_str
+        if _should_force_str(label, sender, _has_default_str):
+            _patch_model_cls(sender, '__str__', _model_str)
 
 
 def _register_models_receiver():
