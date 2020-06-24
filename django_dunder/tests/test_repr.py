@@ -4,6 +4,7 @@ from django_nine.versions import DJANGO_GTE_2_0
 
 from django_dunder.core import _model_name_counter
 from django_dunder.mixins import DunderReprModel
+from django_dunder._register import _has_default_repr
 
 from django_fake_model import models as f
 
@@ -21,6 +22,9 @@ class ReprDefault(DunderReprModel, f.FakeModel):
 @ReprDefaultOrig.fake_me
 @ReprDefault.fake_me
 def test_repr_default():
+    assert _has_default_repr(ReprDefaultOrig)
+    assert not _has_default_repr(ReprDefault)
+
     item_orig = ReprDefaultOrig.objects.create(name1='a', name2='b')
 
     if DJANGO_GTE_2_0:
@@ -129,3 +133,42 @@ def test_repr_explicit_app():
 
     assert repr(item1) == 'myapp1.NameConflict1(id=1)'
     assert repr(item2) == 'myapp2.NameConflict2(id=1)'
+
+
+class ReprHasDunderRepr(f.FakeModel):
+    name = models.TextField(null=True, blank=True)
+
+    def __repr__(self):
+        return 'model.__repr__'
+
+
+@ReprHasDunderRepr.fake_me
+def test_auto_ignore_existing():
+    assert not _has_default_repr(ReprHasDunderRepr)
+
+    item = ReprHasDunderRepr.objects.create()
+
+    assert repr(item) == 'model.__repr__'
+
+
+class ReprHasDunderReprParent(f.FakeModel):
+    name = models.TextField(null=True, blank=True)
+
+    def __repr__(self):
+        return 'model.__repr__'
+
+    class Meta:
+        abstract = True
+
+
+class ReprHasDunderReprChild(ReprHasDunderReprParent):
+    pass
+
+
+@ReprHasDunderReprChild.fake_me
+def test_auto_ignore_existing_inheritance():
+    assert not _has_default_repr(ReprHasDunderReprChild)
+
+    item = ReprHasDunderReprChild.objects.create()
+
+    assert repr(item) == 'model.__repr__'
