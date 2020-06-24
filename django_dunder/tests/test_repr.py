@@ -73,6 +73,23 @@ def test_repr_unique_together():
     assert repr(item) == "UniqueTogether(name1='a', name2='b')"
 
 
+class UniqueTogetherSet(DunderReprModel, f.FakeModel):
+    name = models.TextField(null=True, blank=True)
+    name1 = models.TextField(null=True, blank=True)
+    name2 = models.TextField(null=True, blank=True)
+
+    class Meta:
+        unique_together = set(['name1', 'name2'])
+
+
+@UniqueTogether.fake_me
+def test_repr_unique_together_set():
+    item = UniqueTogether.objects.create(
+        name="z", name1="a", name2="b")
+
+    assert repr(item) == "UniqueTogether(name1='a', name2='b')"
+
+
 class OneField(DunderReprModel, f.FakeModel):
     name = models.TextField(null=True, blank=True)
 
