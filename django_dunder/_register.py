@@ -1,3 +1,7 @@
+import sys
+import warnings
+
+from django.core.exceptions import ImproperlyConfigured
 from django.db.models import Model
 from django.db.models.signals import class_prepared
 from django.dispatch import receiver
@@ -10,6 +14,8 @@ from .core import (
     _model_str,
 )
 
+PY3 = sys.version_info[0] == 3
+
 
 def _has_default_repr(model):
     for cls in model.__mro__:
@@ -20,13 +26,70 @@ def _has_default_repr(model):
                 return False
 
 
+# This also patches model.__str__ if a __unicode__ is found first
 def _has_default_str(model):
     for cls in model.__mro__:
-        if '__str__' in cls.__dict__:
-            if cls.__str__ == Model.__str__:
-                return True
-            else:
+        if cls == Model:
+            return True
+
+        unicode_func = cls.__dict__.get('__unicode__', None)
+
+        # Copy the __unicode__ to __str__ on the appropriate class.
+        # Subsequent models inheriting from that class will skip the
+        # copy, but still warn.
+        str_func = cls.__dict__.get('__str__', None)
+
+        if unicode_func:
+            from_model = ''
+            if cls != model:
+                from_model = ' (inherited from {})'.format(cls)
+
+            if PY3 and app_settings.REJECT_UNICODE:
+                raise ImproperlyConfigured(
+                    '{}.__unicode__{} detected'
+                    .format(model._meta.label, from_model)
+                )
+
+            warn_unicode = app_settings.WARN_UNICODE
+            copy_unicode = app_settings.COPY_UNICODE if PY3 else False
+
+            if unicode_func == str_func:
+                copied = getattr(str_func, '_copied', False)
+                if not copied and warn_unicode and PY3:
+                    warnings.warn(
+                        '{}.__unicode__{} is duplicating '
+                        'its __str__ method, and is unwanted on Python 3'
+                        .format(model._meta.label, from_model)
+                    )
                 return False
+
+            if str_func and PY3:
+                warnings.warn(
+                    '{}.__unicode__{} is different to its __str__. '
+                    'The __unicode__ should be removed on Python 3'
+                    .format(model._meta.label, from_model)
+                )
+                return False
+
+            elif not str_func:
+                warnings.warn(
+                    '{}.__unicode__{} will not be used on Python 3; '
+                    'Inform owner of model to add a __str__, and remove '
+                    'the __unicode__ on Python 3'
+                    .format(model._meta.label, from_model)
+                )
+
+            if copy_unicode:
+                # Tag the method so that it wont be the subject of warnings
+                cls.__unicode__._copied = True
+                _patch_model_cls(model, '__str__', cls.__unicode__)
+                return False
+
+            if not PY3:
+                return False
+
+        if str_func:
+            return False
 
 
 def _should_force_repr(label, model, has_default_func):
@@ -49,8 +112,9 @@ def _should_force_str(label, model, has_default_func):
     if label in app_settings.FORCE_STR:
         return True
 
-    if app_settings.AUTO_STR and has_default_func(model):
-        return True
+    if app_settings.AUTO_STR or app_settings.REJECT_UNICODE:
+        if has_default_func(model):
+            return True
 
     return False
 

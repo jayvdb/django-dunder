@@ -1,11 +1,9 @@
-import sys
-
-from django.conf import settings
+from django.conf import settings as django_settings
 from django.core.exceptions import ImproperlyConfigured
 
 def get_setting_safe(name, default):
     try:
-        return getattr(settings, 'DUNDER_' + name, default)
+        return getattr(django_settings, 'DUNDER_' + name, default)
     except ImproperlyConfigured:
         return default
 
@@ -46,6 +44,7 @@ def _post_process():
         FORCE_STR = _AlwaysContains(FORCE_STR)
 
     _ANY_REGISTER = (
+        WARN_UNICODE or COPY_UNICODE or REJECT_UNICODE or
         AUTO or AUTO_REPR or AUTO_STR or FORCE or FORCE_REPR or FORCE_STR)
 
     if isinstance(REPR_EXCLUDE, bool):
@@ -67,5 +66,14 @@ FORCE_STR = get_setting_safe('FORCE_STR', FORCE)
 
 REPR_EXCLUDE = get_setting_safe('REPR_EXCLUDE', False)
 STR_EXCLUDE = get_setting_safe('STR_EXCLUDE', False)
+
+WARN_UNICODE = get_setting_safe('WARN_UNICODE', True)
+
+# Only in effect on Python 3
+# Could be a list
+COPY_UNICODE = get_setting_safe('COPY_UNICODE', AUTO_STR)
+
+REJECT_UNICODE = get_setting_safe('REJECT_UNICODE',
+    not django_settings.DEBUG and not COPY_UNICODE)
 
 _post_process()
