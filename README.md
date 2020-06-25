@@ -1,6 +1,6 @@
 # django-dunder
 
-django-dunder is an installable app to automatically provide usable
+django-dunder is an installable app to automatically provide customisable
 `__repr__` and `__str__` for other Django third-party installable apps
 and for project apps.
 
@@ -92,6 +92,53 @@ however it can be set to emit errors, or disabled by setting it to `False`.
 
 - `DUNDER_CHECK_INACTIVE_UNICODE = 'warn'`
 
+### Formatting
+
+The default formatting of `__str__` and `__repr__` given below can be modified
+globally in the settings.
+
+- `DUNDER_REPR_ATTR_FMT = '{name}={value!r}'`
+- `DUNDER_REPR_FMT = '{}({})'`
+
+- `DUNDER_STR_ATTR_FMT = '{name}={value}'`
+- `DUNDER_STR_FMT = '<{}: {}>'`
+
+In addition to standard Python string Formatter syntax, some experimental magic
+behind the scenes allows the chaining together of attribute modifiers.
+This is only active for the two attribute formatters.  Methods of types are
+transparently invoked, and as are builtins.
+
+e.g. `DUNDER_STR_ATTR_FMT = '{name}={value.round__title}'` will apply
+round up numbers and apply title case to strings.
+
+In addition, there is one extra modifier `ellipsis` that can be used to truncate
+long text fields, appending an `...` ellipsis.  It defaults to 100 characters.
+
+e.g. `DUNDER_STR_ATTR_FMT = '{name}={value.round__ellipsis_20}'` will apply
+round up numbers and shorten strings to at most 20 characters.
+
+On CPython, it is possible to add methods to core types using the `forbiddenfruit`
+library.  For example, if [`datatype-tools`](https://github.com/edmundpf/datatype_tools)
+is installed as directed, with imports in `settings.py` or some other early
+loading Django code, use `()` syntax to use method names containing a `_`.
+
+- `DUNDER_STR_ATTR_FMT = '{name}={value.round__ellipsis_20__format_date()}'`
+
+When installing custom methods for core types from libraries, be aware they
+often reuse existing core methods or builtin names.
+In the case of `datatype-tools`, it provides a `float.round()` which uses
+two significant places by default while `round(float)` has zero as default.
+
+When building custom methods for core types, avoid using method names
+which conflict with Python names or conflict with Django names.  Otherwise
+problems like https://github.com/havocesp/typext/issues/1 arise.
+
+Want more?  If you can find the experimental magic, extend it and activate with:
+
+- `DUNDER_WRAPPER_CLASS = 'your_magic.Wrapper'`
+
+And please submit PRs to add your magic here for others to use.
+
 ## Explicit fields
 
 To show specific fields in either `str()` or `repr()`, two extra
@@ -134,22 +181,32 @@ from `INSTALLED_APPS`.
 
 To avoid that, use [djsommo](https://github.com/jayvdb/djsommo)
 
+## Extending to other types
+
+It should be possible to apply the functionality here to types other than
+Django models and instances.  Some other way of identifying the appropriate
+classes to patch is need, perhaps with additional configuration.
+
+The ultimate solution for CPython-only would be if
+[its type dunders could be 'curse'd](https://github.com/clarete/forbiddenfruit/issues/11),
+especially if `object.__str__` and `object.__repr__` could be replaced.
+
 ## Alternatives
 
 django-dunder is especially useful when a project uses third-party apps
 that do not provide these dunder methods that are suitable for the project.
 In fact, several `django.contrib` models do not provide these dunder methods.
 
-If that is not relevant, and if the project is using sentry, and the project
-only wants a sane `__repr__`, incorporate the decorator in
-[`sentry.db.models`](https://github.com/getsentry/sentry/blob/master/src/sentry/db/models/base.py)
-into a base mixin model used throughout the project.
-
 Inspiration was drawn from
 - [django-model-repr](https://github.com/relip/django-model-repr)
 - [django-auto-repr](https://github.com/dan-passaro/django-auto-repr)
 
 They may be sufficient for some projects.
+
+If that is not relevant, and if the project is using sentry, and the project
+only wants a sane `__repr__`, incorporate the decorator in
+[`sentry.db.models`](https://github.com/getsentry/sentry/blob/master/src/sentry/db/models/base.py)
+into a base mixin model used throughout the project.
 
 Starting a new project, and only interested in your own models?
 [pydantic](https://github.com/samuelcolvin/pydantic) provides default and customisable
