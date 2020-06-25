@@ -151,7 +151,7 @@ Inspiration was drawn from
 
 They may be sufficient for some projects.
 
-Only interested in your own models?
+Starting a new project, and only interested in your own models?
 [pydantic](https://github.com/samuelcolvin/pydantic) provides default and customisable
 dunders, and
 [django-ninja](https://github.com/vitalik/django-ninja) provides a Django REST
