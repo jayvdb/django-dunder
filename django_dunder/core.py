@@ -4,14 +4,13 @@ import functools
 from django.db import models
 from django.db.models import fields
 
+from . import app_settings
+
+from ._formatter import FormattableObjectWrapper
 
 _model_name_counter = collections.Counter()
 _dunder_applied_counter = 0
 
-FIELD_REPR_FMT = '{}={!r}'
-FIELD_STR_FMT = '{}={}'
-INSTANCE_REPR_FMT = '{}({})'
-INSTANCE_STR_FMT = '<{}: {}>'
 
 def field_value(model, field):
     value = getattr(model, field.name)
@@ -26,7 +25,7 @@ def field_value(model, field):
     return value
 
 
-def _format_field(model, field, fmt=FIELD_REPR_FMT):
+def _format_field(model, field, fmt=None, wrap=True):
     """Obtain either "bar_id=9" or "bar='bar_value'" str.
 
     field is a Django Field object.
@@ -35,23 +34,30 @@ def _format_field(model, field, fmt=FIELD_REPR_FMT):
         field_name = field.name + '_id'
     else:
         field_name = field.name
-    return _format_field_raw(model, field, field_name, fmt=fmt)
+    return _format_field_raw(model, field, field_name, fmt=fmt, wrap=wrap)
 
 
-def _format_field_raw(model, field, field_name=None, fmt=FIELD_REPR_FMT):
+def _format_field_raw(model, field, field_name=None, fmt=None, wrap=True):
     """Obtain "bar='bar_value'" str.
 
     field is a Django Field object.
     field_name is either field.name or field.name + '_id'
     """
+    if not fmt:
+        fmt = app_settings.STR_ATTR_FMT
+
     value = field_value(model, field)
     if not value:
-        return ""
+        return ''
 
-    return fmt.format(field_name or field.name, value)
+    if wrap:
+        value = app_settings.WRAPPER_CLASS(value)
+
+    return fmt.format(name=field_name or field.name, value=value)
 
 
-def _to_string(model, meta_field_name, instance_fmt, field_fmt):
+def _to_string(model, meta_field_name, instance_fmt, field_fmt, wrap=False):
+	
     self = model
     fmt = field_fmt
     cls = type(self)
@@ -72,14 +78,14 @@ def _to_string(model, meta_field_name, instance_fmt, field_fmt):
         meta_fields_filtered = [f for f in meta_fields if f.name in selected_field_names]
         meta_fields_filtered.sort(key=lambda f: selected_field_names.index(f.name))
 
-        func = functools.partial(_format_field_raw, self, fmt=fmt)
+        func = functools.partial(_format_field_raw, self, fmt=fmt, wrap=wrap)
         parts = filter(None, map(func, meta_fields_filtered))
     elif len(meta_fields) < 3:
         # _raw shows 'other=Foo' instead of other_id=3
-        func = functools.partial(_format_field_raw, self, fmt=fmt)
+        func = functools.partial(_format_field_raw, self, fmt=fmt, wrap=wrap)
         parts = filter(None, map(func, meta_fields))
     else:
-        func = functools.partial(_format_field, self, fmt=fmt)
+        func = functools.partial(_format_field, self, fmt=fmt, wrap=wrap)
         parts = filter(None, map(func, meta_fields))
 
     parts = list(parts)
@@ -91,7 +97,7 @@ def _to_string(model, meta_field_name, instance_fmt, field_fmt):
     attrs = ', '.join(parts)
 
     if not attrs and has_autofield:
-        attrs = _format_field_raw(self, meta_fields[0], fmt=fmt)
+        attrs = _format_field_raw(self, meta_fields[0], fmt=fmt, wrap=wrap)
 
     if _model_name_counter[cls.__name__] > 1:
         model_name = cls._meta.label
@@ -106,8 +112,9 @@ def _model_repr(self):
     return _to_string(
         model=self,
         meta_field_name='repr_fields',
-        instance_fmt=INSTANCE_REPR_FMT,
-        field_fmt=FIELD_REPR_FMT,
+        instance_fmt=app_settings.REPR_FMT,
+        field_fmt=app_settings.REPR_ATTR_FMT,
+        wrap=True,
     )
 
 
@@ -115,6 +122,7 @@ def _model_str(self):
     return _to_string(
         model=self,
         meta_field_name='str_fields',
-        instance_fmt=INSTANCE_STR_FMT,
-        field_fmt=FIELD_STR_FMT,
+        instance_fmt=app_settings.STR_FMT,
+        field_fmt=app_settings.STR_ATTR_FMT,
+        wrap=True,
     )
