@@ -12,9 +12,10 @@ if 'repr_fields' not in options.DEFAULT_NAMES:
 _model_name_counter = collections.Counter()
 _dunder_applied_counter = 0
 
-FIELD_REPR_FMT="{}={!r}"
-FIELD_STR_FMT="{}={}"
-
+FIELD_REPR_FMT = '{}={!r}'
+FIELD_STR_FMT = '{}={}'
+INSTANCE_REPR_FMT = '{}({})'
+INSTANCE_STR_FMT = '<{}: {}>'
 
 def field_value(model, field):
     value = getattr(model, field.name)
@@ -54,8 +55,9 @@ def _format_field_raw(model, field, field_name=None, fmt=FIELD_REPR_FMT):
     return fmt.format(field_name or field.name, value)
 
 
-def _to_string(model, meta_field_name, fmt):
+def _to_string(model, meta_field_name, instance_fmt, field_fmt):
     self = model
+    fmt = field_fmt
     cls = type(self)
     meta_fields = cls._meta.fields
     has_autofield = isinstance(meta_fields[0], fields.AutoField)
@@ -100,7 +102,7 @@ def _to_string(model, meta_field_name, fmt):
     else:
         model_name = cls.__name__
 
-    rv = '{}({})'.format(model_name, attrs)
+    rv = instance_fmt.format(model_name, attrs)
     return rv
 
 
@@ -108,7 +110,8 @@ def _model_repr(self):
     return _to_string(
         model=self,
         meta_field_name='repr_fields',
-        fmt=FIELD_REPR_FMT,
+        instance_fmt=INSTANCE_REPR_FMT,
+        field_fmt=FIELD_REPR_FMT,
     )
 
 
@@ -116,5 +119,6 @@ def _model_str(self):
     return _to_string(
         model=self,
         meta_field_name='str_fields',
-        fmt=FIELD_STR_FMT,
+        instance_fmt=INSTANCE_STR_FMT,
+        field_fmt=FIELD_STR_FMT,
     )
