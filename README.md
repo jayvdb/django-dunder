@@ -150,3 +150,11 @@ Inspiration was drawn from
 - [django-auto-repr](https://github.com/dan-passaro/django-auto-repr)
 
 They may be sufficient for some projects.
+
+Only interested in your own models?
+[pydantic](https://github.com/samuelcolvin/pydantic) provides default and customisable
+dunders, and
+[django-ninja](https://github.com/vitalik/django-ninja) provides a Django REST
+interface on top, and there are lots of other tools layered on top of pydantic, like
+[pydantic-ui](https://github.com/prismaticd/pydantic-ui) providing a Django Admin-like
+interface.
