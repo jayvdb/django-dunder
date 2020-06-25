@@ -34,7 +34,7 @@ def test_str_default():
 
     item = StrDefault.objects.create(name1='a', name2='b')
 
-    assert str(item) == "StrDefault(id=1, name1=a, name2=b)"
+    assert str(item) == "<StrDefault: id=1, name1=a, name2=b>"
 
 
 class StrUniqueOrig(f.FakeModel):
@@ -59,7 +59,7 @@ def test_str_unique():
 
     item = StrUnique.objects.create(name1='a', name2='b')
 
-    assert str(item) == "StrUnique(name1=a)"
+    assert str(item) == "<StrUnique: name1=a>"
 
 
 class StrPrimaryKeyOrig(f.FakeModel):
@@ -84,7 +84,7 @@ def test_str_primary_key():
 
     item = StrPrimaryKey.objects.create(name1='a', name2='b')
 
-    assert str(item) == "StrPrimaryKey(name1=a)"
+    assert str(item) == "<StrPrimaryKey: name1=a>"
 
 
 class StrExplicit(DunderStrModel, f.FakeModel):
@@ -99,15 +99,15 @@ class StrExplicit(DunderStrModel, f.FakeModel):
 def test_str_explicit():
     item = StrExplicit.objects.create(name1='a', name2='b')
 
-    assert str(item) == "StrExplicit(name2=b, name1=a)"
+    assert str(item) == "<StrExplicit: name2=b, name1=a>"
 
     item = StrExplicit.objects.create(name2='b')
 
-    assert str(item) == "StrExplicit(name2=b)"
+    assert str(item) == "<StrExplicit: name2=b>"
 
     item = StrExplicit.objects.create(name1='a')
 
-    assert str(item) == "StrExplicit(name1=a)"
+    assert str(item) == "<StrExplicit: name1=a>"
 
 
 class StrUniqueTogether(DunderStrModel, f.FakeModel):
@@ -124,7 +124,7 @@ def test_str_unique_together():
     item = StrUniqueTogether.objects.create(
         name="z", name1="a", name2="b")
 
-    assert str(item) == "StrUniqueTogether(name1=a, name2=b)"
+    assert str(item) == "<StrUniqueTogether: name1=a, name2=b>"
 
 
 class StrOneField(DunderStrModel, f.FakeModel):
@@ -135,11 +135,11 @@ class StrOneField(DunderStrModel, f.FakeModel):
 def test_str_one_field():
     item = StrOneField.objects.create()
 
-    assert str(item) == 'StrOneField(id=1)'
+    assert str(item) == '<StrOneField: id=1>'
 
     item = StrOneField.objects.create(name='a')
 
-    assert str(item) == "StrOneField(name=a)"
+    assert str(item) == "<StrOneField: name=a>"
 
 
 class StrNameConflict1(DunderStrModel, f.FakeModel):
@@ -164,8 +164,8 @@ def test_str_explicit_app():
     item1 = StrNameConflict1.objects.create()
     item2 = StrNameConflict2.objects.create()
 
-    assert str(item1) == 'myapp1.StrNameConflict1(id=1)'
-    assert str(item2) == 'myapp2.StrNameConflict2(id=1)'
+    assert str(item1) == '<myapp1.StrNameConflict1: id=1>'
+    assert str(item2) == '<myapp2.StrNameConflict2: id=1>'
 
 
 class StrHasDunderStr(f.FakeModel):
