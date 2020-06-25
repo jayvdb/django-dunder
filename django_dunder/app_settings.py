@@ -1,5 +1,7 @@
 from django.conf import settings as django_settings
 from django.core.exceptions import ImproperlyConfigured
+from django.utils.module_loading import import_string
+
 
 def get_setting_safe(name, default):
     try:
@@ -32,6 +34,7 @@ class _AlwaysContains(object):
 
 def _post_process():
     global FORCE_REPR, FORCE_STR, REPR_EXCLUDE, STR_EXCLUDE, _ANY_REGISTER
+    global FMT_CLASS
 
     if isinstance(FORCE_REPR, list) and isinstance(FORCE, list):
         FORCE_REPR += FORCE
@@ -53,6 +56,8 @@ def _post_process():
     if isinstance(STR_EXCLUDE, bool):
         STR_EXCLUDE = _AlwaysContains(STR_EXCLUDE)
 
+    if isinstance(FMT_CLASS, str):
+        FMT_CLASS = import_string(FMT_CLASS)
 
 AUTO = get_setting_safe('AUTO', False)
 
@@ -78,5 +83,13 @@ REJECT_UNICODE = get_setting_safe('REJECT_UNICODE',
 
 CHECK_INACTIVE_UNICODE = get_setting_safe(
     'CHECK_INACTIVE_UNICODE', 'error')
+
+REPR_ATTR_FMT = get_setting_safe('REPR_ATTR_FMT', '{name}={value!r}')
+STR_ATTR_FMT = get_setting_safe('STR_ATTR_FMT', '{name}={value}')
+
+REPR_FMT = get_setting_safe('REPR_FMT', '{}({})')
+STR_FMT = get_setting_safe('STR_FMT', '<{}: {}>')
+
+FMT_CLASS = get_setting_safe('FMT_CLASS', 'django_dunder._formatter.FormattableObjectWrapper')
 
 _post_process()

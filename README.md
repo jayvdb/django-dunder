@@ -92,6 +92,32 @@ however it can be set to emit errors, or disabled by setting it to `False`.
 
 - `DUNDER_CHECK_INACTIVE_UNICODE = 'warn'`
 
+### Formatting
+
+The default formatting of `__str__` and `__repr__` given below can be modified
+globally in the settings.
+
+- `DUNDER_REPR_ATTR_FMT = '{name}={value!r}'`
+- `DUNDER_REPR_FMT = '{}({})'`
+
+- `DUNDER_STR_ATTR_FMT = '{name}={value}'`
+- `DUNDER_STR_FMT = '<{}: {}>'`
+
+In addition to standard Python string Formatter syntax, some experimental magic
+behind the scenes allows the chaining together of attribute modifiers.
+This is only active for the two attribute formatters.  Methods of types are
+transparently invoked, and as are builtins.
+
+e.g. `DUNDER_STR_ATTR_FMT = '{name}={value.round__title}'` will apply
+round up numbers and apply title case to strings.
+
+In addition, there is one extra modifier `ellipsis` that can be used to truncate
+long text fields, appending an `...` ellipsis.
+
+Want more?  If you can find the experimental magic, extend it and activate it.
+
+- `DUNDER_WRAPPER_CLASS = 'your_magic.Wrapper'`
+
 ## Explicit fields
 
 To show specific fields in either `str()` or `repr()`, two extra
