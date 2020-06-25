@@ -1,4 +1,4 @@
-__version__ = VERSION = (0, 2, 1)
+__version__ = VERSION = (0, 3, 0)
 
 # Force the meta options to be added early
 import django_dunder._meta_options  # noqa
