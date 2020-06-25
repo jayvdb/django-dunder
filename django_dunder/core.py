@@ -2,12 +2,8 @@ import collections
 import functools
 
 from django.db import models
-from django.db.models import fields, options
+from django.db.models import fields
 
-# Django doesn't support adding third-party fields to model class Meta.
-if 'repr_fields' not in options.DEFAULT_NAMES:
-    options.DEFAULT_NAMES = options.DEFAULT_NAMES + (
-        'repr_fields', 'str_fields')
 
 _model_name_counter = collections.Counter()
 _dunder_applied_counter = 0
