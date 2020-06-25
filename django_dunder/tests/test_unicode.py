@@ -170,3 +170,68 @@ def test_unicode_dunder_inherited():
         assert unicode(item) == 'model.__unicode__'
 
     app_settings.COPY_UNICODE = False
+
+
+class StrHasDunderUnicodeCompat(f.FakeModel):
+
+    def __str__(self):
+        return 'model.__str__'
+
+
+@StrHasDunderUnicodeCompat.fake_me
+def test_unicode_dunder_compat():
+    app_settings.COPY_UNICODE = False
+
+    assert hasattr(StrHasDunderUnicodeCompat, '__str__')
+    assert not hasattr(StrHasDunderUnicodeCompat, '__unicode__')
+
+    orig_str_func = StrHasDunderUnicodeCompat.__str__
+
+    StrHasDunderUnicodeWrapped = python_2_unicode_compatible(
+        StrHasDunderUnicodeCompat)
+
+    assert hasattr(StrHasDunderUnicodeWrapped, '__str__')
+    if PY3:
+        assert not hasattr(StrHasDunderUnicodeWrapped, '__unicode__')
+    else:
+        assert hasattr(StrHasDunderUnicodeWrapped, '__unicode__')
+
+    # python_2_unicode_compatible moves __str__ to __unicode__,
+    # and creates a safe __str__
+    if PY3:
+        assert StrHasDunderUnicodeWrapped.__str__ == orig_str_func
+        assert not hasattr(StrHasDunderUnicodeWrapped, '__unicode__')
+    else:
+        assert StrHasDunderUnicodeWrapped.__unicode__ == orig_str_func
+        assert StrHasDunderUnicodeWrapped.__str__ != orig_str_func
+
+    str_func = StrHasDunderUnicodeCompat.__str__
+    if not PY3:
+        unicode_func = StrHasDunderUnicodeCompat.__unicode__
+
+    assert not _has_default_str(StrHasDunderUnicodeWrapped)
+
+    assert StrHasDunderUnicodeCompat.__str__ == str_func
+    if PY3:
+        assert not hasattr(StrHasDunderUnicodeWrapped, '__unicode__')
+    else:
+        assert StrHasDunderUnicodeCompat.__unicode__ == unicode_func
+
+    item = StrHasDunderUnicodeWrapped.objects.create()
+
+    assert str(item) == 'model.__str__'
+    if not PY3:
+        assert unicode(item) == 'model.__str__'
+
+    app_settings.COPY_UNICODE = True
+
+    assert not _has_default_str(StrHasDunderUnicodeWrapped)
+
+    # Check nothing changed
+    assert StrHasDunderUnicodeCompat.__str__ == str_func
+    if PY3:
+        assert not hasattr(StrHasDunderUnicodeWrapped, '__unicode__')
+    else:
+        assert StrHasDunderUnicodeCompat.__unicode__ == unicode_func
+
+    app_settings.COPY_UNICODE = False

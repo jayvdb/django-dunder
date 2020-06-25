@@ -15,6 +15,10 @@ from .core import (
 )
 
 PY3 = sys.version_info[0] == 3
+DJ2_UNICODE_MSG = (
+    'For compatability with Django 2, add @six.python_2_unicode_compatible '
+    'to the class'
+)
 
 
 def _has_default_repr(model):
@@ -46,8 +50,8 @@ def _has_default_str(model):
 
             if PY3 and app_settings.REJECT_UNICODE:
                 raise ImproperlyConfigured(
-                    '{}.__unicode__{} detected'
-                    .format(model._meta.label, from_model)
+                    '{}.__unicode__{} detected.  {}'
+                    .format(model._meta.label, from_model, DJ2_UNICODE_MSG)
                 )
 
             warn_unicode = app_settings.WARN_UNICODE
@@ -57,17 +61,17 @@ def _has_default_str(model):
                 copied = getattr(str_func, '_copied', False)
                 if not copied and warn_unicode and PY3:
                     warnings.warn(
-                        '{}.__unicode__{} is duplicating '
-                        'its __str__ method, and is unwanted on Python 3'
-                        .format(model._meta.label, from_model)
+                        '{}.__unicode__{} is duplicating its __str__ method, '
+                        'and is unwanted on Python 3.  {}'
+                        .format(model._meta.label, from_model, DJ2_UNICODE_MSG)
                     )
                 return False
 
             if str_func and PY3:
                 warnings.warn(
                     '{}.__unicode__{} is different to its __str__. '
-                    'The __unicode__ should be removed on Python 3'
-                    .format(model._meta.label, from_model)
+                    'The __unicode__ should be removed on Python 3.  {}'
+                    .format(model._meta.label, from_model, DJ2_UNICODE_MSG)
                 )
                 return False
 
@@ -75,8 +79,8 @@ def _has_default_str(model):
                 warnings.warn(
                     '{}.__unicode__{} will not be used on Python 3; '
                     'Inform owner of model to add a __str__, and remove '
-                    'the __unicode__ on Python 3'
-                    .format(model._meta.label, from_model)
+                    'the __unicode__ on Python 3.  {}'
+                    .format(model._meta.label, from_model, DJ2_UNICODE_MSG)
                 )
 
             if copy_unicode:

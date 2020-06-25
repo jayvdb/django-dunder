@@ -4,6 +4,7 @@ from django.apps import apps
 from django.core.checks import Error, Info, register, Warning
 
 from .app_settings import CHECK_INACTIVE_UNICODE
+from ._register import DJ2_UNICODE_MSG
 
 PY3 = sys.version_info[0] == 3
 
@@ -30,7 +31,7 @@ def check_py2_unicode(app_configs, **kwargs):
                         Info(
                             'Unnecessary {}.__unicode__ found'
                             .format(model._meta.label),
-                            hint='Remove it on Python 3',
+                            hint=DJ2_UNICODE_MSG,
                             obj=model,
                             id='django_under.I001',
                         )
