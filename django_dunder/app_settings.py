@@ -59,7 +59,7 @@ def _post_process():
     if isinstance(WRAPPER_CLASS, str):
         WRAPPER_CLASS = import_string(WRAPPER_CLASS)
 
-AUTO = get_setting_safe('AUTO', False)
+AUTO = get_setting_safe('AUTO', True)
 
 AUTO_REPR = get_setting_safe('AUTO_REPR', AUTO)
 AUTO_STR = get_setting_safe('AUTO_STR', AUTO)
