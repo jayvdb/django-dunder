@@ -98,11 +98,11 @@ def test_fmt_str_item():
     assert str(item) == '<FmtDefault: id=1, name1=5>'
 
     app_settings.STR_ATTR_FMT = '{name}={value[0:5]}'
-    if not PY3:
-        return
-
     try:
         assert str(item) == '<FmtDefault: id=1, name1=12345>'
+    except ValueError:
+        if PY3:
+            raise
     finally:
         app_settings.STR_ATTR_FMT = '{name}={value}'
 
