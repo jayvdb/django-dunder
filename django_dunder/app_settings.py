@@ -82,7 +82,7 @@ REJECT_UNICODE = get_setting_safe('REJECT_UNICODE',
     not django_settings.DEBUG and not COPY_UNICODE)
 
 CHECK_INACTIVE_UNICODE = get_setting_safe(
-    'CHECK_INACTIVE_UNICODE', 'error')
+    'CHECK_INACTIVE_UNICODE', 'error' if not COPY_UNICODE or REJECT_UNICODE else 'warn')
 
 REPR_ATTR_FMT = get_setting_safe('REPR_ATTR_FMT', '{name}={value!r}')
 STR_ATTR_FMT = get_setting_safe('STR_ATTR_FMT', '{name}={value}')
